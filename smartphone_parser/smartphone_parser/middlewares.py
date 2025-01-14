@@ -1,12 +1,15 @@
-# Define here the models for your spider middleware
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
 from scrapy import signals
-
-# useful for handling different item types with a single interface
+from scrapy.http import HtmlResponse
 from itemadapter import is_item, ItemAdapter
+from selenium import webdriver
+from selenium_stealth import stealth
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from fake_useragent import UserAgent
+import time
 
 
 class SmartphoneParserSpiderMiddleware:
@@ -57,9 +60,31 @@ class SmartphoneParserSpiderMiddleware:
 
 
 class SmartphoneParserDownloaderMiddleware:
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the downloader middleware does not modify the
-    # passed objects.
+
+    @property
+    def web_driver(self):
+        options = webdriver.ChromeOptions()
+        options.add_argument("start-maximized")
+        #options.add_argument("--headless")
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+        ua = UserAgent(browsers='chrome', os='windows', platforms='pc').random
+
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(options=options, service=service)
+
+        stealth(driver,
+                languages=["en-US", "en"],
+                user_agent=ua,
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+                )
+
+        return driver
+
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -69,24 +94,15 @@ class SmartphoneParserDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
-
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
-        return None
+        driver = self.web_driver
+        driver.get(request.url)
+        WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "paginator")))
+        items = driver.find_elements(By.CLASS_NAME, "vi9_23 iw0_23 tile-root")
+        print(items)
+        return HtmlResponse(driver.page_source)
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
 
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
         return response
 
     def process_exception(self, request, exception, spider):
