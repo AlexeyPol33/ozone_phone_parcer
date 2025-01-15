@@ -10,3 +10,6 @@ class PhoneSpider(scrapy.Spider):
 
     def parse(self, response):
         pass
+
+    def os_parser(self):
+        pass
