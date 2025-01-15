@@ -9,8 +9,49 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from fake_useragent import UserAgent
+from abc import ABCMeta
 import time
 
+
+class SingletonMeta(ABCMeta):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
+
+    @property
+    def __options(self):
+        options = webdriver.ChromeOptions()
+        options.add_argument("start-maximized")
+        #options.add_argument("--headless")
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+        return options
+
+    @property
+    def __stealth_parameters(self):
+        ua = UserAgent(browsers='chrome', os='windows', platforms='pc').random
+        return {
+                "languages":["en-US", "en"],
+                "user_agent":ua,
+                "vendor":"Google Inc.",
+                "platform":"Win32",
+                "webgl_vendor":"Intel Inc.",
+                "renderer":"Intel Iris OpenGL Engine",
+                "fix_hairline":True,
+        }
+
+    def __init__(self):
+        options = self.__options
+        service = Service(ChromeDriverManager().install())
+        stealth_parameters = self.__stealth_parameters
+        super().__init__(options, service, keep_alive= True)
+        stealth(self,**stealth_parameters)
 
 class SmartphoneParserSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -61,31 +102,6 @@ class SmartphoneParserSpiderMiddleware:
 
 class SmartphoneParserDownloaderMiddleware:
 
-    @property
-    def web_driver(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("start-maximized")
-        #options.add_argument("--headless")
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        ua = UserAgent(browsers='chrome', os='windows', platforms='pc').random
-
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(options=options, service=service)
-
-        stealth(driver,
-                languages=["en-US", "en"],
-                user_agent=ua,
-                vendor="Google Inc.",
-                platform="Win32",
-                webgl_vendor="Intel Inc.",
-                renderer="Intel Iris OpenGL Engine",
-                fix_hairline=True,
-                )
-
-        return driver
-
-
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
@@ -94,7 +110,7 @@ class SmartphoneParserDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        driver = self.web_driver
+        driver = DriverSingleton()
         driver.get(request.url)
         WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "paginator")))
         items = driver.find_elements(By.CLASS_NAME, "vi9_23 iw0_23 tile-root")
