@@ -112,10 +112,16 @@ class SmartphoneParserDownloaderMiddleware:
     def process_request(self, request, spider):
         driver = DriverSingleton()
         driver.get(request.url)
-        WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "paginator")))
-        items = driver.find_elements(By.CLASS_NAME, "vi9_23 iw0_23 tile-root")
-        print(items)
-        return HtmlResponse(driver.page_source)
+        WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "__ozon")))
+        body = str.encode(driver.page_source)
+        url = driver.current_url
+        driver.close()
+        return HtmlResponse(
+            url,
+            body=body,
+            encoding='utf-8',
+            request=request
+            )
 
     def process_response(self, request, response, spider):
 

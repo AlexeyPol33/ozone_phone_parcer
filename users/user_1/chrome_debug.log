@@ -1,5 +1,0 @@
-[27784:29340:0114/133752.923:WARNING:chrome_main_delegate.cc(672)] This is Chrome version 131.0.6778.265 (not a warning)
-[27784:29340:0114/133752.975:INFO:chrome_browser_cloud_management_controller.cc(196)] No machine level policy manager exists.
-[23196:316:0114/133753.074:WARNING:viz_main_impl.cc(85)] VizNullHypothesis is disabled (not a warning)
-[8792:2796:0114/133753.740:WARNING:sqlite_persistent_store_backend_base.cc(198)] Failed to post task from FlushAndNotifyInBackground@net\extras\sqlite\sqlite_persistent_store_backend_base.cc:248 to client_task_runner_.
-[8792:2796:0114/133753.740:WARNING:sqlite_persistent_store_backend_base.cc(198)] Failed to post task from FlushAndNotifyInBackground@net\extras\sqlite\sqlite_persistent_store_backend_base.cc:248 to client_task_runner_.
