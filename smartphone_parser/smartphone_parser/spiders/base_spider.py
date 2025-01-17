@@ -7,6 +7,7 @@ from scrapy import Spider,  signals
 class BaseSpider(Spider):
     name: str
     file_name: str | None = None
+    scroll: int | None = None
     results: Iterable[str]
 
     allowed_domains = ['ozon.ru']

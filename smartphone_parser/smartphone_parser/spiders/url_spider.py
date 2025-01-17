@@ -4,6 +4,7 @@ from .base_spider import BaseSpider
 class URLSpider(BaseSpider):
     name = "url_spider"
     file_name = "urls"
+    scroll = 7000
     start_urls = ["https://www.ozon.ru/category/smartfony-15502/?sorting=rating"]
 
     results = []
