@@ -1,5 +1,6 @@
 from scrapy import signals
 from scrapy.http import HtmlResponse
+from selenium.common.exceptions import TimeoutException
 from itemadapter import is_item, ItemAdapter
 from selenium import webdriver
 from selenium_stealth import stealth
@@ -57,20 +58,22 @@ class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
     def scroll(self, y:int) -> None:
         """Scrolls the page to position y or end"""
 
+        log = logging.getLogger("middleware.DriverSingleton.scroll")
         try:
             position = 0
             while y >= position:
-                scroll_height = self.execute_script('return document.body.scrollHeight;')
+                scroll_height = self.execute_script("return document.body.scrollHeight;")
                 if scroll_height < y:
                     self.execute_script("window.scrollTo(0, document.body.scrollHeight)")
                     position = scroll_height
-                    WebDriverWait(self,5).until_not(lambda d: d.execute_script('return document.body.scrollHeight;') <= scroll_height)
+                    WebDriverWait(self,5).until_not(lambda d: d.execute_script("return document.body.scrollHeight;") <= scroll_height)
                 else:
-                    self.execute_script("window.scrollTo(0, y)")
+                    self.execute_script(f"window.scrollTo(0, {y})")
                     position = scroll_height
+        except TimeoutException:
+            log.warning(msg="Ending scrolling with timeout")
         except Exception as e:
-            log = logging.getLogger("middleware.DriverSingleton.scroll")
-            log.error(msg=repr(e))
+            log.error(msg=f"Unexpected exception:{repr(e)}")
 
 class SmartphoneParserSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -132,7 +135,7 @@ class SmartphoneParserDownloaderMiddleware:
         driver = DriverSingleton()
         driver.get(request.url)
         WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "__ozon")))
-        scrols = driver.scroll(10000)
+        driver.scroll(8000)
         body = str.encode(driver.page_source)
         url = driver.current_url
         driver.close()
