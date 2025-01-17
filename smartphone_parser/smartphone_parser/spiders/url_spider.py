@@ -1,5 +1,6 @@
 from .base_spider import BaseSpider
 
+
 class URLSpider(BaseSpider):
     name = "url_spider"
     file_name = "urls"

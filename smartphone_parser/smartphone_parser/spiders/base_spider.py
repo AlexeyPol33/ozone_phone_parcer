@@ -4,11 +4,9 @@ from scrapy.selector import Selector
 from scrapy import Spider,  signals
 
 
-
 class BaseSpider(Spider):
     name: str
     file_name: str | None = None
-    start_urls: Iterable
     results: Iterable[str]
 
     allowed_domains = ['ozon.ru']
