@@ -12,9 +12,9 @@ class PhoneSpider(Spider):
     results = []
 
     def parse(self, response):
-        urls = response.css("div.iw1_23").css("a::attr(href)").extract()
+        urls = response.css("div.wi1_23").css("a::attr(href)").extract()
         for url in urls:
-            self.results.append("https://www.ozon.ru/" + url)
+            self.results.append("https://www.ozon.ru" + url)
 
     def os_parser(self):
         pass
@@ -28,4 +28,4 @@ class PhoneSpider(Spider):
     def spider_closed(self, spider):
         with open("result.txt", "w", encoding="utf-8") as f:
             f.write(str(self.results))
-        spider.logger.info("Spider closed")
+        spider.logger.info(f"!!!!!!!!!!!!!!!!!!! {len(self.results)}")

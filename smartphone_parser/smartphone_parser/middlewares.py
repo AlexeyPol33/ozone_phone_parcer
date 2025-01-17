@@ -11,6 +11,7 @@ from selenium.webdriver.common.by import By
 from fake_useragent import UserAgent
 from abc import ABCMeta
 import time
+import logging
 
 
 class SingletonMeta(ABCMeta):
@@ -52,6 +53,24 @@ class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
         stealth_parameters = self.__stealth_parameters
         super().__init__(options, service, keep_alive= True)
         stealth(self,**stealth_parameters)
+
+    def scroll(self, y:int) -> None:
+        """Scrolls the page to position y or end"""
+
+        try:
+            position = 0
+            while y >= position:
+                scroll_height = self.execute_script('return document.body.scrollHeight;')
+                if scroll_height < y:
+                    self.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                    position = scroll_height
+                    WebDriverWait(self,5).until_not(lambda d: d.execute_script('return document.body.scrollHeight;') <= scroll_height)
+                else:
+                    self.execute_script("window.scrollTo(0, y)")
+                    position = scroll_height
+        except Exception as e:
+            log = logging.getLogger("middleware.DriverSingleton.scroll")
+            log.error(msg=repr(e))
 
 class SmartphoneParserSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -113,6 +132,7 @@ class SmartphoneParserDownloaderMiddleware:
         driver = DriverSingleton()
         driver.get(request.url)
         WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "__ozon")))
+        scrols = driver.scroll(10000)
         body = str.encode(driver.page_source)
         url = driver.current_url
         driver.close()
