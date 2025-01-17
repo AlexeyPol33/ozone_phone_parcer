@@ -2,7 +2,7 @@ from typing import Iterable
 from pathlib import Path
 from scrapy.selector import Selector
 from scrapy import Spider,  signals
-
+from ..middlewares import DriverSingleton
 
 class BaseSpider(Spider):
     name: str
@@ -22,4 +22,5 @@ class BaseSpider(Spider):
         if self.file_name:
             with open(f"{self.file_name}.txt", "w", encoding="utf-8") as f:
                 f.writelines(self.results)
+        DriverSingleton().close()
         spider.logger.info(f"The spider completed its work with results: {len(self.results)}")

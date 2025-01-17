@@ -104,7 +104,6 @@ class SmartphoneParserDownloaderMiddleware:
 
     def process_response(self, request, response, spider):
 
-        DriverSingleton().close()
         return response
 
     def spider_opened(self, spider):
