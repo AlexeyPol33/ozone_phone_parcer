@@ -1,11 +1,5 @@
-# Scrapy settings for smartphone_parser project
-#
-# For simplicity, this file contains only settings considered important or
-# commonly used. You can find more settings consulting the documentation:
-#
-#     https://docs.scrapy.org/en/latest/topics/settings.html
-#     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import logging
+from selenium.webdriver.remote.remote_connection import LOGGER
 
 BOT_NAME = "smartphone_parser"
 
@@ -90,3 +84,5 @@ DOWNLOADER_MIDDLEWARES = {
 # Set settings whose default value is deprecated to a future-proof value
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+LOGGER.setLevel(logging.INFO)

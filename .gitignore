@@ -1,4 +1,4 @@
 __pycache__/
-smartphone_parser/smartphone_parser/spiders/__pycache__/
+smartphone_parser/smartphone_parser/spiders/__pycache__
 *venv
 result.txt
