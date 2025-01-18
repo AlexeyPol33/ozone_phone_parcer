@@ -2,6 +2,7 @@ from .base_spider import BaseSpider
 from scrapy import Request
 from scrapy.selector import Selector
 from functools import reduce
+from progress.bar import IncrementalBar
 import regex as re
 
 
@@ -9,6 +10,7 @@ class OSSpider(BaseSpider):
     name = "os_spider"
     file_name = "main_result"
     scroll = 4000
+    bar = IncrementalBar('Data collection in progress',max=100)
     results = []
 
     def start_requests(self):
@@ -18,6 +20,7 @@ class OSSpider(BaseSpider):
                 yield Request(url=url,callback=self.parse)
 
     def parse(self, response):
+        self.bar.next()
         characteristics = response.xpath('//*[@id="layoutPage"]/div[1]/div[6]/div/div[1]/div[2]/div[2]/div/div/div[3]')
         os = characteristics.re(r"(Android|iOS|Windows|Linux|macOS)")
         try:

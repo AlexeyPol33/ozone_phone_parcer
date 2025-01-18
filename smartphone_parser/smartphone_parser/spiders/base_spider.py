@@ -2,6 +2,7 @@ from typing import Iterable
 from pathlib import Path
 from scrapy.selector import Selector
 from scrapy import Spider,  signals
+from progress import Infinite
 from ..middlewares import DriverSingleton
 
 class BaseSpider(Spider):
@@ -9,6 +10,7 @@ class BaseSpider(Spider):
     file_name: str | None = None
     scroll: int | None = None
     results: Iterable[str]
+    bar: Infinite
 
     allowed_domains = ['ozon.ru']
 
@@ -19,6 +21,7 @@ class BaseSpider(Spider):
         return spider
 
     def spider_closed(self, spider:Spider):
+        self.bar.finish()
         if self.file_name:
             with open(f"{self.file_name}.txt", "w", encoding="utf-8") as f:
                 f.writelines(self.results)
