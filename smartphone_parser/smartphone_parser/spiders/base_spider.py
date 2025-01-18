@@ -22,5 +22,5 @@ class BaseSpider(Spider):
         if self.file_name:
             with open(f"{self.file_name}.txt", "w", encoding="utf-8") as f:
                 f.writelines(self.results)
-        DriverSingleton().close()
+        DriverSingleton().quit()
         spider.logger.info(f"The spider completed its work with results: {len(self.results)}")

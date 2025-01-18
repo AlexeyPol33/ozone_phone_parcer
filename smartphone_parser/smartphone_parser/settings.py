@@ -1,5 +1,6 @@
 import logging
-from selenium.webdriver.remote.remote_connection import LOGGER
+from selenium.webdriver.remote.remote_connection import LOGGER as webdriver_loger
+from urllib3.connectionpool import log as urllib3_loger
 
 BOT_NAME = "smartphone_parser"
 
@@ -85,4 +86,5 @@ DOWNLOADER_MIDDLEWARES = {
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-LOGGER.setLevel(logging.INFO)
+webdriver_loger.setLevel(logging.INFO)
+urllib3_loger.setLevel(logging.INFO)

@@ -31,7 +31,7 @@ class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
     def __options(self):
         options = webdriver.ChromeOptions()
         options.add_argument("start-maximized")
-        #options.add_argument("--headless")
+        options.add_argument("--headless")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         return options
