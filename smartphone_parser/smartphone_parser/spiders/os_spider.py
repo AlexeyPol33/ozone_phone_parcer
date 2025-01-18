@@ -3,7 +3,28 @@ from scrapy import Request
 from scrapy.selector import Selector
 from functools import reduce
 from progress.bar import IncrementalBar
+from collections import UserDict
 import regex as re
+
+
+class ResultDict(UserDict):
+    def __len__(self):
+        return sum(self.data.values())
+
+    def __iter__(self):
+        self.__keys = list(self.data.keys())
+        return self
+
+    def __next__(self):
+        if not self.__keys:
+            raise StopIteration
+        high_value_index = 0
+        for key_i in range(len(self.__keys)):
+            if self.data[self.__keys[key_i]] > self.data[self.__keys[high_value_index]]:
+                high_value_index = key_i
+        os = self.__keys.pop(high_value_index)
+        return f"{os} - {self.data[os]}\n"
+
 
 
 class OSSpider(BaseSpider):
@@ -11,7 +32,7 @@ class OSSpider(BaseSpider):
     file_name = "main_result"
     scroll = 4000
     bar = IncrementalBar('Data collection in progress',max=100)
-    results = []
+    results = ResultDict()
 
     def start_requests(self):
 
@@ -20,18 +41,23 @@ class OSSpider(BaseSpider):
                 yield Request(url=url,callback=self.parse)
 
     def parse(self, response):
-        self.bar.next()
+
         characteristics = response.xpath('//*[@id="layoutPage"]/div[1]/div[6]/div/div[1]/div[2]/div[2]/div/div/div[3]')
         os = characteristics.re(r"(Android|iOS|Windows|Linux|macOS)")
+        os = list(os)
         try:
             version = characteristics.re(r'Версия(.*?)</div>')
             version = map(lambda txt: re.findall(r">([^<]+)<", txt),version)
             version = reduce(lambda x, y: x+y,version)
             version = [v for v in version if bool(re.search(r'\d', v))]
             if version:
-                self.results.append(str(version) + "\n")
+                version = version.pop()
+                self.results[version] = self.results.get(version, 0) + 1
             else:
                 raise
         except:
             if os:
-                self.results.append(str(list(os)) + "\n")
+                os = os.pop()
+                self.results[os] = self.results.get(os, 0) + 1
+        finally:
+            self.bar.next()
