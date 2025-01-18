@@ -1,6 +1,7 @@
 from .base_spider import BaseSpider
 from scrapy import Request
 from scrapy.selector import Selector
+from functools import reduce
 import regex as re
 
 
@@ -17,6 +18,11 @@ class OSSpider(BaseSpider):
                 yield Request(url=url,callback=self.parse)
 
     def parse(self, response):
-        os = response.xpath('//*[@id="section-characteristics"]').get()
-        version = response.xpath('//*[@id="section-characteristics"]/div[2]/div[7]/div[3]/dl[2]/dd').get()
-        self.results.append(str(os) + "\n")
+        characteristics = response.xpath('//*[@id="layoutPage"]/div[1]/div[6]/div/div[1]/div[2]/div[2]/div/div/div[3]')
+        os = characteristics.re(r"(Android|iOS|Windows|Linux|macOS)")
+        version = characteristics.re(r'Версия(.*?)</div>')
+        version = map(lambda txt: re.findall(r">([^<]+)<", txt),version)
+        version = reduce(lambda x, y: x+y,version)
+        version = [v for v in version if bool(re.search(r'\d', v))]
+        if version:
+            self.results.append(str(version) + "\n")
