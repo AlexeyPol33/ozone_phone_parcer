@@ -6,7 +6,7 @@ class URLSpider(BaseSpider):
     name = "url_spider"
     file_name = "urls"
     bar = LineSpinner('URLS collection in progress ')
-    scroll = 14000
+    scroll = 15000
     start_urls = ["https://www.ozon.ru/category/smartfony-15502/?sorting=rating"]
 
     results = []
@@ -17,5 +17,5 @@ class URLSpider(BaseSpider):
         self.bar.next()
         self.results = ["https://www.ozon.ru" + f"{url}\n" for url in urls]
         self.bar.next()
-        self.results = list(set(self.results))[:100]
+        self.results = list(set(self.results))
         self.bar.next()
