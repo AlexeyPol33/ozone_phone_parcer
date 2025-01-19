@@ -1,7 +1,6 @@
 from scrapy import signals
 from scrapy.http import HtmlResponse
 from selenium.common.exceptions import TimeoutException
-from itemadapter import is_item, ItemAdapter
 from selenium import webdriver
 from selenium_stealth import stealth
 from selenium.webdriver.chrome.service import Service
@@ -11,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from fake_useragent import UserAgent
 from abc import ABCMeta
-import time
 import logging
 
 
@@ -25,7 +23,7 @@ class SingletonMeta(ABCMeta):
         return cls._instances[cls]
 
 
-class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
+class DriverSingleton(webdriver.Chrome, metaclass=SingletonMeta):
 
     @property
     def __options(self):
@@ -40,23 +38,23 @@ class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
     def __stealth_parameters(self):
         ua = UserAgent(browsers='chrome', os='windows', platforms='pc').random
         return {
-                "languages":["en-US", "en"],
-                "user_agent":ua,
-                "vendor":"Google Inc.",
-                "platform":"Win32",
-                "webgl_vendor":"Intel Inc.",
-                "renderer":"Intel Iris OpenGL Engine",
-                "fix_hairline":True,
-        }
+                "languages": ["en-US", "en"],
+                "user_agent": ua,
+                "vendor": "Google Inc.",
+                "platform": "Win32",
+                "webgl_vendor": "Intel Inc.",
+                "renderer": "Intel Iris OpenGL Engine",
+                "fix_hairline": True,
+                }
 
     def __init__(self):
         options = self.__options
         service = Service(ChromeDriverManager().install())
         stealth_parameters = self.__stealth_parameters
-        super().__init__(options, service, keep_alive= True)
-        stealth(self,**stealth_parameters)
+        super().__init__(options, service, keep_alive=True)
+        stealth(self, **stealth_parameters)
 
-    def scroll(self, y:int) -> None:
+    def scroll(self, y: int) -> None:
         """Scrolls the page to position y or end"""
 
         log = logging.getLogger("middleware.DriverSingleton.scroll")
@@ -67,7 +65,7 @@ class DriverSingleton(webdriver.Chrome,metaclass=SingletonMeta):
                 if scroll_height < y:
                     self.execute_script("window.scrollTo(0, document.body.scrollHeight)")
                     position = scroll_height
-                    WebDriverWait(self,5).until_not(lambda d: d.execute_script("return document.body.scrollHeight;") <= scroll_height)
+                    WebDriverWait(self, 5).until_not(lambda d: d.execute_script("return document.body.scrollHeight;") <= scroll_height)
                 else:
                     self.execute_script(f"window.scrollTo(0, {y})")
                     position = scroll_height
@@ -90,7 +88,7 @@ class SmartphoneParserDownloaderMiddleware:
 
         driver = DriverSingleton()
         driver.get(request.url)
-        WebDriverWait(driver,20).until(EC.visibility_of_element_located((By.ID, "__ozon")))
+        WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.ID, "__ozon")))
 
         if spider.scroll:
             driver.scroll(spider.scroll)
@@ -99,8 +97,7 @@ class SmartphoneParserDownloaderMiddleware:
             url=driver.current_url,
             body=str.encode(driver.page_source),
             encoding='utf-8',
-            request=request
-            )
+            request=request)
 
     def process_response(self, request, response, spider):
 

@@ -1,9 +1,8 @@
 from typing import Iterable
-from pathlib import Path
-from scrapy.selector import Selector
-from scrapy import Spider,  signals
+from scrapy import Spider, signals
 from progress import Infinite
 from ..middlewares import DriverSingleton
+
 
 class BaseSpider(Spider):
     name: str
@@ -20,7 +19,7 @@ class BaseSpider(Spider):
         crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
 
-    def spider_closed(self, spider:Spider):
+    def spider_closed(self, spider: Spider):
         self.bar.finish()
         if self.file_name:
             with open(f"{self.file_name}.txt", "w", encoding="utf-8") as f:
