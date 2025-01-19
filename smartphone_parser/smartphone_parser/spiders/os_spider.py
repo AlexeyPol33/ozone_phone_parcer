@@ -7,6 +7,7 @@ import regex as re
 
 
 class ResultDict(UserDict):
+
     def __len__(self):
         return sum(self.data.values())
 
@@ -39,6 +40,8 @@ class OSSpider(BaseSpider):
                 yield Request(url=url, callback=self.parse)
 
     def parse(self, response):
+
+        result: str | None = None
         if len(self.results) > 100:
             return
         characteristics = response.xpath('//*[@id="layoutPage"]/div[1]/div[6]/div/div[1]/div[2]/div[2]/div/div/div[3]')
@@ -51,12 +54,14 @@ class OSSpider(BaseSpider):
             version = [v for v in version if bool(re.search(r'\d', v))]
             if version:
                 version = version.pop()
-                self.results[version] = self.results.get(version, 0) + 1
+                result = version
             else:
                 raise
         except Exception:
             if os:
                 os = os.pop()
-                self.results[os] = self.results.get(os, 0) + 1
+                result = os + "without version designation"
         finally:
-            self.bar.next()
+            if result:
+                self.results[result] = self.results.get(result, 0) + 1
+                self.bar.next()
