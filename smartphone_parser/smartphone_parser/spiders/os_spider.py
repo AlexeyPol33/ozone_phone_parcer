@@ -3,7 +3,9 @@ from scrapy import Request
 from functools import reduce
 from progress.bar import IncrementalBar
 from collections import UserDict
+import logging
 import regex as re
+import pandas as pd
 
 
 class ResultDict(UserDict):
@@ -13,17 +15,15 @@ class ResultDict(UserDict):
 
     def __iter__(self):
         self.__keys = list(self.data.keys())
+        df = pd.DataFrame(list(self.data.items()), columns=['OS', 'Count'])
+        df['Distribution'] = df['Count'] / 100
+        df.sort_values(by='Count', inplace=True, ascending=False)
+        self.__data_itr = iter(df.iterrows())
         return self
 
     def __next__(self):
-        if not self.__keys:
-            raise StopIteration
-        high_value_index = 0
-        for key_i in range(len(self.__keys)):
-            if self.data[self.__keys[key_i]] > self.data[self.__keys[high_value_index]]:
-                high_value_index = key_i
-        os = self.__keys.pop(high_value_index)
-        return f"{os} - {self.data[os]}\n"
+        _, row = next(self.__data_itr)
+        return f"{row.OS} - {row.Count} - {row.Distribution}\n"
 
 
 class OSSpider(BaseSpider):
@@ -42,8 +42,6 @@ class OSSpider(BaseSpider):
     def parse(self, response):
 
         result: str | None = None
-        if len(self.results) > 100:
-            return
         characteristics = response.xpath('//*[@id="layoutPage"]/div[1]/div[6]/div/div[1]/div[2]/div[2]/div/div/div[3]')
         os = characteristics.re(r"(Android|iOS|Windows|Linux|macOS)")
         os = list(os)
@@ -60,8 +58,12 @@ class OSSpider(BaseSpider):
         except Exception:
             if os:
                 os = os.pop()
-                result = os + "without version designation"
+                result = os + " without version designation"
         finally:
             if result:
                 self.results[result] = self.results.get(result, 0) + 1
                 self.bar.next()
+            if len(self.results) >= 100:
+                self.logger.error(f"lenresults{len(self.results)}")
+                self.crawler.engine.close_spider(self,)
+                return

@@ -11,7 +11,7 @@ NEWSPIDER_MODULE = "smartphone_parser.spiders"
 
 LOG_LEVEL = logging.ERROR
 scrapy_logger.setLevel(logging.INFO)
-webdriver_logger.setLevel(logging.INFO)
+webdriver_logger.setLevel(logging.NOTSET)
 urllib3_logger.setLevel(logging.INFO)
 
 ROBOTSTXT_OBEY = False
